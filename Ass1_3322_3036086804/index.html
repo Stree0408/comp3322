@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignment one</title>
+    <link href="style.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="side">
+        <!-- floating menu -->
+        <button class="icon">
+            <img src="images/menu-icon.ico">
+        </button>
+
+        <nav class="float-menu">
+            <div><a href="#tag1">Top</a></div>
+            <div><a href="#tag2">Overview</a></div>
+            <div><a href="#tag3">Objectives</a></div>
+            <div><a href="#tag4">Backgrounds</a></div>
+            <div><a href="#tag5">Requirements</a></div>
+            <div><a href="#tag6">Submission</a></div>
+            <div><a href="#tag7">Grading Policy</a></div>
+            <div><a href="#tag8">Readings</a></div>
+            <div><a href="#tag9">Plagiarism</a></div>
+        </nav>
+        <div class="clear-float"></div>
+    </div>
+
+    <!-- header -->
+    <header class="head-container">
+        <div class="head-title">
+            <h1>CSIS0234 Computer Networks</h1>
+            <h1>Programming Project</h1>
+        </div>
+
+        <div class="head-info">
+            <div class="header-left">
+                <h3>Total 15 points</h3>
+                <p>Version 1.1</p>
+            </div>
+            <div class="empty"></div>
+            <div class="header-right">
+                <h3>Due date: 5:00pm April 29, 20xx</h3>
+            </div>
+            <div class="clear-float"></div>
+        </div>
+    </header>
+
+    <!-- navbar -->
+    <nav class="nav-container">
+        <div><a href="#tag1">Top</a></div>
+        <div><a href="#tag2">Overview</a></div>
+        <div><a href="#tag3">Objectives</a></div>
+        <div><a href="#tag4">Backgrounds</a></div>
+        <div><a href="#tag5">Requirements</a></div>
+        <div><a href="#tag6">Submission</a></div>
+        <div><a href="#tag7">Grading Policy</a></div>
+        <div><a href="#tag8">Readings</a></div>
+        <div><a href="#tag9">Plagiarism</a></div>
+    </nav>
+
+
+    <!-- main contents -->
+    <main class="main-container">
+        <section id="tag1" class="height_fix center">
+            <h1>Programming Project - HTTP Proxy Server</h1>
+        </section>
+
+
+        <section id="tag2" class="overview height_fix">
+            <h2 class="btm-margin">Overview</h2>
+            <p class="top-margin">For this programming project, you are going to implement a web proxy server. This
+                proxy server gets
+                request messages from clients (web browsers), forwards the requests to target web server or another
+                proxy server, obtains the corresponding response messages and sends the responses back to the clients.
+                This proxy server should be able to handle all kinds of objects, not just HTML pages, but also images
+                and
+                audio files. Moreover, this proxy server should support persistent connections; a timeout timer should
+                be
+                used to terminate idle connection from client. To reduce the complexity of this programming project, the
+                proxy server does not support caching mechanism.
+            </p>
+            <figure>
+                <figcaption>Figure 1. HTTP Proxy Server</figcaption>
+
+                <img src="images/image1.png">
+
+            </figure>
+        </section>
+
+
+        <section id="tag3" class="height_fix">
+            <h2 class="btm-margin">Objectives</h2>
+            <ol class="top-margin">
+                <li>Through this exercise, you should get a solid understanding of how the text-based networking
+                    protocol (such as HTTP) works as well as how to implement a standard networking protocol.</li>
+                <li>This is a good opportunity to further enhance your Socket programming skill in C/C++ .</li>
+                <li>A learning and assessment activity to support ILO2d and ILO4.</li>
+            </ol>
+        </section>
+
+
+        <section id="tag4" class="backgrounds height_fix">
+            <h2 class="btm-margin">Backgrounds</h2>
+            <p class="top-margin">HTTP is the transfer protocol used throughout the WWW. The HTTP protocol is a
+                request/response
+                protocol. When a client opens a connection, it immediately sends its request for a file. The web server
+                then responds with the file or an error message. Each interaction consists of one request and one reply.
+                Both are MIME-like message (MIME: The Multipurpose Internet Mail Extensions).</p>
+            <p>Each request message includes a request line, a few header lines, a blank line, and the possible message
+                body. Similar is the response message.</p>
+            <div class="center">
+                <div>Request-message = request-line *(message-header CRLF) CRLF [ message-body ]</div>
+                <div>Response-message = status-line *(message-header CRLF) CRLF [ message-body ]</div>
+            </div>
+
+            <p>For example, below are the request/response messages sent by a web client (curl) to the server to
+                download a web document:
+            </p>
+
+            <figure>
+                <figcaption>Figure 2. Sample Web Request/Response messages</figcaption>
+                <img src="images/image2.png">
+            </figure>
+
+            <div class="italic-blue btm-margin">Non-Persistent Connection and Persistent Connection</div>
+            <p class="top-margin">In HTTP 1.0, after the TCP connection was established, a single request was sent over
+                and a single response
+                was sent back. Then the TCP connection was released. Establishing a separate connection for each file
+                request incurs expensive overhead. In view of this deficiency, HTTP 1.1 was designed to support
+                persistent
+                connections. In HTTP 1.1, it is possible to establish a TCP connection, sends a request and gets a
+                response,
+                and then sends additional requests and gets additional responses. Our proxy server should support
+                persistent connections between web clients and itself as well as between itself and target web/proxy
+                servers.
+            </p>
+            <p>If an HTTP 1.1 client sends multiple requests through a single connection, the server should send
+                responses
+                back in the same order as the requests - this is all it takes for a server to support persistent
+                connections.
+                The server should close a connection after the connection has been idle for long enough duration (not
+                defined in the specification; usually set to 10 - 15 seconds).
+            </p>
+        </section>
+
+
+
+
+
+
+        <section id="tag5" class="height_fix">
+            <h2 class="btm-margin">Requirements</h2>
+            <p class="top-margin">You are going to write a simple concurrent HTTP proxy server (http_proxy) using C
+                socket, which works as
+                follows:
+            </p>
+            <ol>
+                <li>The http_proxy server listens for connection requests from clients.</li>
+                <li>When there is a new TCP connection request, the http_proxy server creates a new process** to
+                    handle the new connection.</li>
+                <li>The new process sends any HTTP requests to the (origin/proxy) server and reads the server's reply.
+                </li>
+                <li>Then it sends the responses back to the requesting client.</li>
+            </ol>
+            <p>** Instead of using multiple processes, you can implement a multiple threads proxy server; the http_proxy
+                server creates one new thread to handle each connection.
+            </p>
+            <div class="italic-blue btm-margin">Relay client requests and server responses</div>
+            <ol class="top-margin">
+                <li class="btm-gap">Directly connect to target web (origin) server:
+                    <ul>
+                        <li class="top-gap">Extract the “Host: ” header line from the client request message to get the
+                            target server
+                            name
+                        </li>
+                        <li>Connect and send the request to target server on port 80</li>
+                        <li>Get the response and send back to client</li>
+                    </ul>
+                </li>
+
+                <li>When configured to connect to another proxy server
+                    <ul>
+                        <li class="top-gap">Connect and send the request to the specified proxy server and port</li>
+                        <li>Get the response and send back to client</li>
+                    </ul>
+                </li>
+            </ol>
+            <p class="btm-margin italic-blue">Persistent connections</p>
+            <p class="top-margin">With persistent connection, the proxy server leaves the connection open for serving
+                more requests after
+                handling a request. The server closes the connection as per the client instructs or if the timeout of
+                idle
+                connection has been reached. In order to let the client knows when is the end of a response message, all
+                response messages on the persistent connection must have a self-defined message length using the
+                Content-Length header field [except for the cases of dynamically generated web contents]. As our proxy
+                server, in principle, is just a relay server, our proxy server does not need to handle that as the
+                Content-
+                Length headers should be generated by the origin servers.
+            </p>
+            <p>To terminate an idle client connection, the proxy server can simply close the TCP connection and the
+                client
+                browser should detect this situation automatically. Similarly, a client browser can terminate an idle
+                persistent connection by closing the TCP connection; the proxy server should detect this situation and
+                should handle this correctly.
+            </p>
+            <p class="btm-margin italic-blue">Support request types</p>
+            <p class="top-margin">For this programming project, HTTP requests generated by all test cases are GET
+                request types. However,
+                of unknown reasons, some browsers may generate POST requests under some situations (e.g., Chrome
+                browser).
+            </p>
+            <p class="btm-margin italic-blue">Caching proxy server</p>
+            <p class="top-margin">You are not required to implement the caching mechanism in this project. That means
+                all requests received
+                from the clients are forwarded to the target origin/proxy server without the needs to search the cache
+                memory as well as manage the cache memory.
+            </p>
+            <p class="btm-margin italic-blue">How to start the HTTP proxy process</p>
+            <p class="top-margin">The http_proxy should be invoked as follow:</p>
+            <p class="proxy-command italic">./http_proxy myport [proxy_server:port]</p>
+            <p>The 1st parameter - myport is the port number that the http_proxy is listening on. The 2nd parameter –
+                proxy_server:port is an optional argument. When proxy_server:port is specified, all the HTTP requests
+                (responses) should be forwarded to (received from) proxy_server. The port in proxy_server:port is the
+                port
+                number that the proxy_server is listening on.
+            </p>
+            <p class="btm-margin italic-blue">Output messages</p>
+            <p class="top-margin">To aid your programming and debugging, please print some log information to the
+                screen. You are required
+                to generate some output with major events:
+            </p>
+            <ul>
+                <li>When receiving a new connection - identify the origin - display some useful information.</li>
+                <li>When establishing a new connection - display the target server information</li>
+                <li>When receiving a new request - display some information, e.g,, the request-line.</li>
+                <li>When receiving a response message - display some information, e.g., message size</li>
+                <li>When detecting the termination of persistent connections or server connection.</li>
+            </ul>
+
+            <p>Sample runs:</p>
+            <div class="sample-1">
+                <p class="italic">
+                    atctam@LinuxPC: > ./http_proxy 54321<br>
+                    http_proxy listening on port 54321<br>
+                    http_proxy got a NEW connection (1) from 147.8.175.181<br>
+                    Received Request from user: 349 bytes<br>
+                    Set up a connection to server i.cs.hku.hk<br>
+                    Requesting server:<br>
+                    GET <a
+                        href="http://i.cs.hku.hk/course/c0324/test/test-1.htm">http://i.cs.hku.hk/course/c0324/test/test-1.htm</a>
+                    HTTP/1.1<br>
+                    Host: i.cs.hku.hk<br>
+                    User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:14.0)<br>
+                    Gecko/20100101 Firefox/14.0.1<br>
+                    Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8<br>
+                    Accept-Language: en-us,en;q=0.5<br>
+                    Accept-Encoding: gzip, deflate<br>
+                    Proxy-Connection: keep-alive<br>
+                    ...<br>
+                    <br>
+                    Received Response from Server: 263 bytes<br>
+                    Received Response from Server: 357 bytes<br>
+                    Received Response from Server: 0 bytes<br>
+                    Connection close by server : i.cs.hku.hk<br>
+                    <br>
+                    Timeout - Persistent Connection (1) Closed<br>
+                </p>
+            </div>
+
+
+            <p class="italic">OR</p>
+
+            <div class="sample-1">
+                <p class="italic">
+                    atctam@LinuxPC: > ./http_proxy 54321 proxy.cs.hku.hk:8282<br>
+                    http_proxy listening on port 54321<br>
+                    http_proxy got a NEW connection (1) from 147.8.175.181<br>
+                    Received Request from user: 349 bytes<br>
+                    Set up a connection to server proxy.cs.hku.hk<br>
+                    Requesting server:<br>
+                    GET <a
+                        href="http://i.cs.hku.hk/course/c0324/test/test-1.htm">http://i.cs.hku.hk/course/c0324/test/test-1.htm</a>
+                    HTTP/1.1<br>
+                    Host: i.cs.hku.hk<br>
+                    User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:14.0)<br>
+                    Gecko/20100101 Firefox/14.0.1<br>
+                    Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8<br>
+                    Accept-Language: en-us,en;q=0.5<br>
+                    Accept-Encoding: gzip, deflate<br>
+                    Proxy-Connection: keep-alive<br>
+                    ...<br>
+                    <br>
+                    Received Response from Server: 761 bytes<br>
+                    <br>
+                    Timeout - Persistent Connection (1) Closed<br>
+                </p>
+            </div>
+
+
+            <p class="btm-margin italic-blue">Test cases</p>
+            <p class="top-margin">We will use (1) Firefox and (2) Chrome to connect to the following web sites for
+                testing of your proxy
+                program.
+            </p>
+
+            <div class="test-links">
+                <a href="http://i.cs.hku.hk/course/c0324/test/test-1.htm">(1)
+                    http://i.cs.hku.hk/course/c0324/test/test-1.htm</a><br>
+                <a href="http://i.cs.hku.hk/~atctam/view/SimpleWebpage.html">(2)
+                    http://i.cs.hku.hk/~atctam/view/SimpleWebpage.html</a><br>
+                <a href="http://i.cs.hku.hk/course/c0324/test/test-2.htm">(3)
+                    http://i.cs.hku.hk/course/c0324/test/test-2.htm</a><br>
+                <a href="http://www.simpleweb.org/">(4) http://www.simpleweb.org/</a><br>
+            </div>
+        </section>
+
+
+
+
+        <section id="tag6" class="height_fix">
+            <h2 class="btm-margin">Submission</h2>
+            <p class="top-margin">A single file named http_proxy.c or http_proxy.cpp with in-line documentation. You
+                should hand-in the
+                program via the Moodle course Website.
+            </p>
+
+            <p class="italic-blue btm-margin">Computer Platform to Use</p>
+            <p class="top-margin">For this assignment, you are expected to work on any UNIX-like workstation, but you
+                need to test your
+                program on the latest distribution of Ubuntu before submission. You can use C/C++ to implement the
+                program, and it should be successfully compiled with g++ (or gcc).
+            </p>
+
+            <p class="italic-blue btm-margin">Format for the documentation</p>
+            <div class="left-list">
+                <ol class="top-margin">
+                    <li>At the head of the submitted file, state clearly the
+                        <ul>
+                            <li>Student name:</li>
+                            <li>Student No. :</li>
+                            <li>Date and version:</li>
+                            <li>Development platform:</li>
+                            <li>Development language:</li>
+                            <li>Compilation:</li>
+                        </ul>
+                    </li>
+
+                    <li>Inline comments (try to be detailed so that your code could be understood by others easily)</li>
+                </ol>
+            </div>
+        </section>
+
+
+
+        <section id="tag7" class="height_fix">
+            <h2 class="btm-margin">Grading Policy</h2>
+            <table class="policy-table">
+                <tr class="table-row">
+                    <td rowspan="2">
+                        <h4>Documentation</h4>
+                        <h4>[1point]</h4>
+                    </td>
+                    <td class="when-p">
+                        <p>High Quality [0.6/1]</p>
+                        <ul>
+                            <li>Include necessary documentation to clearly indicate the logic of the program</li>
+                            <li>Include necessary output messages for debugging and tracing of the
+                                execution flow
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="when-p">
+                        <p>Standard Quality [0.4/1]</p>
+                        <ul>
+                            <li>Include required program and student's info at the beginning of the program</li>
+                            <li>Include minimal inline comments</li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr class="table-row">
+                    <td rowspan="2">
+                        <h4>Connect to target origin Web server</h4>
+                        <h4>[4 points]</h4>
+                    </td>
+                    <td>
+                        <ul>
+                            <li>By setting Firefox or Chrome to use http_proxy as the proxy server, after
+                                removing all cache contents in browser's cache, the browser can successfully
+                                download the documents/objects related to the four test cases. [2/4]
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <ul>
+                            <li>Without clearing browser's cache, the browser can successfully display the
+                                four test cases by just using the reload button to initiate the download
+                                requests. [2/4]
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+
+                <tr class="table-row">
+                    <td rowspan="2">
+                        <h4>Connect to another proxy server</h4>
+                        <h4>[2.5 points]</h4>
+                    </td>
+                    <td>
+                        <ul>
+                            <li>By setting Firefox or Chrome to use http_proxy as the proxy server, which in
+                                turn, is requesting the department proxy server "proxy.cs.hku.hk:8282" to
+                                download all Web documents/objects. After removing all cache contents in
+                                browser's cache, the browser can successfully download the
+                                documents/objects related to the test cases (2), (3), & (4). [1.5/2.5]
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <ul>
+                            <li>Without clearing browser's cache, the browser can successfully display the
+                                the test cases (2), (3), & (4) by just using the reload button to initiate the
+                                download requests. [1/2.5]
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+
+
+                <tr class="table-row">
+                    <td rowspan="2">
+                        <h4>Persistent connection</h4>
+                        <h4>[1.5 points]</h4>
+                    <td>
+                        <ul>
+                            <li>The http_proxy server supports persistent connection with the browser for
+                                downloading test cases (2), (3), & (4). [1/1.5]
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="last-cell">
+                        <ul>
+                            <li>The http_proxy server can successfully terminate idle persistent connection.
+                                [0.5/1.5]
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+
+
+
+            </table>
+
+        </section>
+
+
+
+
+        <section id="tag8" class="height_fix">
+            <h2 class="btm-margin">Readings</h2>
+            <div class="left-list">
+                <ol class="top-margin">
+                    <li>Chapter 2.2 of Computer Networking - A Top-Down Approach Featuring the Internet, 6th edition by
+                        J.
+                        Kurose et. al
+                    </li>
+                    <li>Lecture 9</li>
+                    <li>Workshop 5 - Using WireShark to examine and understand SMTP and HTTP</li>
+                </ol>
+            </div>
+
+        </section>
+
+
+
+        <section id="tag9" class="plagiarism height_fix">
+            <h2 class="btm-margin">Plagiarism</h2>
+            <p class="top-margin">Plagiarism is a very serious offence. Students should understand what constitutes
+                plagiarism, the
+                consequences of committing an offence of plagiarism, and how to avoid it. <span>Please note that we may
+                    request you to explain to us how your program works as well as we may make use of software tools to
+                    detect software plagiarism.
+                </span>
+            </p>
+
+        </section>
+    </main>
+
+
+
+
+</body>
+
+</html>
